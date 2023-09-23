@@ -134,6 +134,9 @@ Individual_Analysis <- function(chr,start_loc,end_loc,genofile,obj_nullmodel,mac
 		ALT <- as.character(seqGetData(genofile, "$alt"))
 		N <- rep(samplesize,length(CHR))
 
+		variantIDs <- seqGetData(genofile, "variant.id")
+		rsIDs <- seqGetData(genofile, "annotation/id")
+		
 		if(!all(CHR==chr))
 		{
 			warning("chr does not match the chromosome of genofile (the opened aGDS)!")
@@ -152,6 +155,9 @@ Individual_Analysis <- function(chr,start_loc,end_loc,genofile,obj_nullmodel,mac
 			ALT_AF_common <- ALT_AF[MAF>=0.05]
 			N_common <- N[MAF>=0.05]
 
+			variantIDs_common <- variantIDs[MAF >= 0.05]
+			rsIDs_common <- rsIDs[MAF >= 0.05]
+			
 			if(sum(MAF>=0.05)==1)
 			{
 				Geno_common <- as.matrix(Geno_common,ncol=1)
@@ -169,7 +175,8 @@ Individual_Analysis <- function(chr,start_loc,end_loc,genofile,obj_nullmodel,mac
 				Score_test <- Individual_Score_Test_denseGRM(Geno_common, P, residuals.phenotype)
 			}
 
-			results_temp <- data.frame(CHR=CHR_common,POS=position_common,REF=REF_common,ALT=ALT_common,ALT_AF=ALT_AF_common,MAF=MAF_common,N=N_common,
+			results_temp <- data.frame(CHR=CHR_common,variantIDs=variantIDs_common, rsIDs=rsIDs_common,
+			                           POS=position_common,REF=REF_common,ALT=ALT_common,ALT_AF=ALT_AF_common,MAF=MAF_common,N=N_common,
 			                           pvalue=exp(-Score_test$pvalue_log),pvalue_log10=Score_test$pvalue_log/log(10),
 			                           Score=Score_test$Score,Score_se=Score_test$Score_se,
 			                           Est=Score_test$Est,Est_se=Score_test$Est_se)
@@ -218,7 +225,8 @@ Individual_Analysis <- function(chr,start_loc,end_loc,genofile,obj_nullmodel,mac
 				}
 			}
 
-			results_temp <- data.frame(CHR=CHR_rare,POS=position_rare,REF=REF_rare,ALT=ALT_rare,ALT_AF=ALT_AF_rare,MAF=MAF_rare,N=N_rare,
+			results_temp <- data.frame(CHR=CHR_rare, variantIDs=variantIDs_common, rsIDs=rsIDs_common,
+			                           POS=position_rare,REF=REF_rare,ALT=ALT_rare,ALT_AF=ALT_AF_rare,MAF=MAF_rare,N=N_rare,
 			                           pvalue=exp(-Score_test$pvalue_log),pvalue_log10=Score_test$pvalue_log/log(10),
 			                           Score=Score_test$Score,Score_se=Score_test$Score_se,
 			                           Est=Score_test$Est,Est_se=Score_test$Est_se)
