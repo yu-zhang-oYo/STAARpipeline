@@ -1,4 +1,4 @@
-Package: STAARpipeline
+Package: STAARpipeline_MR
 Type: Package
 Title: STAAR Pipeline for Analyzing Whole-Genome/Whole-Exome Sequencing Data
 Version: 0.9.6
