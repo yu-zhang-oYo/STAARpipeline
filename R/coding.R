@@ -126,7 +126,10 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 	## Genotype
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
-
+	
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id")  
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -149,29 +152,30 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results_plof_ds <- c()
+	results_plof_ds <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- as.vector(genes[kk,])
-		results_temp[3] <- "plof_ds"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(genes[kk,1])
-		results_temp[4] <- pvalues$num_variant
-
+	  # change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(genes[kk,1])
+		results_temp$Chr <- chr
+		results_temp$Category <- "plof_ds"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- variant.id.gene.category[pvalues$RV_label]
 
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
 		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
+		pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
 
-		results_plof_ds <- rbind(results_plof_ds,results_temp)
+		results_plof_ds <- c(results_plof_ds, results_temp)
 	}
-
-	if(!is.null(results_plof_ds))
-	{
-		colnames(results_plof_ds) <- colnames(results_plof_ds, do.NULL = FALSE, prefix = "col")
-		colnames(results_plof_ds)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results_plof_ds)[(dim(results_plof_ds)[2]-1):dim(results_plof_ds)[2]] <- c("ACAT-O","STAAR-O")
-	}
+	
 
 	#####################################################
 	#                      plof
@@ -195,6 +199,9 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id") 
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -217,28 +224,28 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results_plof <- c()
+	results_plof <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- as.vector(genes[kk,])
-		results_temp[3] <- "plof"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(genes[kk,1])
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(genes[kk,1])
+		results_temp$Chr <- chr
+		results_temp$Category <- "plof"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- variant.id.gene.category[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results_plof <- rbind(results_plof,results_temp)
-	}
-
-	if(!is.null(results_plof))
-	{
-		colnames(results_plof) <- colnames(results_plof, do.NULL = FALSE, prefix = "col")
-		colnames(results_plof)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results_plof)[(dim(results_plof)[2]-1):dim(results_plof)[2]] <- c("ACAT-O","STAAR-O")
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results_plof <- c(results_plof,results_temp)
 	}
 
 	#############################################
@@ -262,6 +269,9 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id") 
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -284,29 +294,30 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results_synonymous <- c()
+	results_synonymous <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- as.vector(genes[kk,])
-		results_temp[3] <- "synonymous"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(genes[kk,1])
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(genes[kk,1])
+		results_temp$Chr <- chr
+		results_temp$Category <- "synonymous"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- variant.id.gene.category[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results_synonymous <- rbind(results_synonymous,results_temp)
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results_synonymous <- c(results_synonymous,results_temp)
 	}
 
-	if(!is.null(results_synonymous))
-	{
-		colnames(results_synonymous) <- colnames(results_synonymous, do.NULL = FALSE, prefix = "col")
-		colnames(results_synonymous)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results_synonymous)[(dim(results_synonymous)[2]-1):dim(results_synonymous)[2]] <- c("ACAT-O","STAAR-O")
-	}
 
 	#################################################
 	#        missense
@@ -329,6 +340,9 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id") 
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -351,21 +365,28 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results <- c()
+	results <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- as.vector(genes[kk,])
-		results_temp[3] <- "missense"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(genes[kk,1])
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(genes[kk,1])
+		results_temp$Chr <- chr
+		results_temp$Category <- "missense"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- variant.id.gene.category[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results <- rbind(results,results_temp)
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results <- c(results,list(results_temp))
 	}
 
 	#################################################
@@ -389,6 +410,9 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id") 
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -413,70 +437,89 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 
 	if(class(pvalues)=="list")
 	{
-		results_temp <- as.vector(genes[kk,])
-		results_temp[3] <- "disruptive_missense"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(genes[kk,1])
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(genes[kk,1])
+		results_temp$Chr <- chr
+		results_temp$Category <- "disruptive_missense"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- variant.id.gene.category[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results <- rbind(results,results_temp)
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results <- c(results,list(results_temp))		
+		
 	}
 
-	if(!is.null(results))
+	if(length(results)!=0)
 	{
-		colnames(results) <- colnames(results, do.NULL = FALSE, prefix = "col")
-		colnames(results)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results)[(dim(results)[2]-1):dim(results)[2]] <- c("ACAT-O","STAAR-O")
-
-		if(dim(results)[1]==1)
+	  
+		if(length(results)==1)
 		{
-			if(results[3]!="disruptive_missense")
+			if(results[[1]]$Category!="disruptive_missense")
 			{
-				results <- cbind(results,matrix(1,1,6))
-				colnames(results)[(dim(results)[2]-5):dim(results)[2]] <- c("SKAT(1,25)-Disruptive","SKAT(1,1)-Disruptive","Burden(1,25)-Disruptive","Burden(1,1)-Disruptive","ACAT-V(1,25)-Disruptive","ACAT-V(1,1)-Disruptive")
+			  # modify the original code to adapt to list
+			  new_elements <- list("SKAT(1,25)-Disruptive" = 1,
+			                       "SKAT(1,1)-Disruptive" = 1,
+			                       "Burden(1,25)-Disruptive" = 1,
+			                       "Burden(1,1)-Disruptive" = 1,
+			                       "ACAT-V(1,25)-Disruptive" = 1,
+			                       "ACAT-V(1,1)-Disruptive" = 1)
+			  
+			  # Append the new elements to the results list
+			  results <- c(results[[1]], new_elements)
 				results_missense <- results
-				results_ds <- c()
+				results_ds <- list()
 			}else
 			{
-				results_missense <- c()
-				results_ds <- results
-				results <- c()
+				results_missense <- list()
+				results_ds <- results[[1]]
+				results <- list()
 			}
 		}
 
-		if(!is.null(results))
+		if(length(results)!=0)
 		{
-			if(dim(results)[1]==2)
+			if(length(results)==2)
 			{
-				results_m <- c(results[1,],rep(0,6))
-				names(results_m)[(length(results_m)-5):length(results_m)] <- c("SKAT(1,25)-Disruptive","SKAT(1,1)-Disruptive","Burden(1,25)-Disruptive","Burden(1,1)-Disruptive","ACAT-V(1,25)-Disruptive","ACAT-V(1,1)-Disruptive")
-				results_m[(length(results_m)-5):length(results_m)] <- results[2,c("SKAT(1,25)","SKAT(1,1)","Burden(1,25)","Burden(1,1)","ACAT-V(1,25)","ACAT-V(1,1)")]
-				apc_num <- (length(results_m)-18)/6
+			  # modify the original code to adapt to list
+			  new_elements <- list("SKAT(1,25)-Disruptive" = results[[2]][["SKAT(1,25)"]],
+			                       "SKAT(1,1)-Disruptive" = results[[2]][["SKAT(1,1)"]],
+			                       "Burden(1,25)-Disruptive" = results[[2]][["Burden(1,25)"]],
+			                       "Burden(1,1)-Disruptive" = results[[2]][["Burden(1,1)"]],
+			                       "ACAT-V(1,25)-Disruptive" = results[[2]][["ACAT-V(1,25)"]],
+			                       "ACAT-V(1,1)-Disruptive" = results[[2]][["ACAT-V(1,1)"]])
+			  results_m <- c(results[[1]], new_elements)
+			  
+				apc_num <- (length(results_m)-20)/6
 				p_seq <- c(1:apc_num,1:apc_num+(apc_num+1),1:apc_num+2*(apc_num+1),1:apc_num+3*(apc_num+1),1:apc_num+4*(apc_num+1),1:apc_num+5*(apc_num+1),(6*apc_num+9):(6*apc_num+14))
-				results_m["STAAR-O"] <- CCT(as.numeric(results_m[5:length(results_m)][p_seq]))
-				results_m["STAAR-S(1,25)"] <- CCT(as.numeric(results_m[5:length(results_m)][c(1:apc_num,6*apc_num+9)]))
-				results_m["STAAR-S(1,1)"] <- CCT(as.numeric(results_m[5:length(results_m)][c(1:apc_num+(apc_num+1),6*apc_num+10)]))
-				results_m["STAAR-B(1,25)"] <- CCT(as.numeric(results_m[5:length(results_m)][c(1:apc_num+2*(apc_num+1),6*apc_num+11)]))
-				results_m["STAAR-B(1,1)"] <- CCT(as.numeric(results_m[5:length(results_m)][c(1:apc_num+3*(apc_num+1),6*apc_num+12)]))
-				results_m["STAAR-A(1,25)"] <- CCT(as.numeric(results_m[5:length(results_m)][c(1:apc_num+4*(apc_num+1),6*apc_num+13)]))
-				results_m["STAAR-A(1,1)"] <- CCT(as.numeric(results_m[5:length(results_m)][c(1:apc_num+5*(apc_num+1),6*apc_num+14)]))
+				results_m[["STAAR-O"]] <- CCT(as.numeric(results_m[7:length(results_m)][p_seq]))
+				results_m[["STAAR-S(1,25)"]] <- CCT(as.numeric(results_m[7:length(results_m)][c(1:apc_num,6*apc_num+9)]))
+				results_m[["STAAR-S(1,1)"]] <- CCT(as.numeric(results_m[7:length(results_m)][c(1:apc_num+(apc_num+1),6*apc_num+10)]))
+				results_m[["STAAR-B(1,25)"]] <- CCT(as.numeric(results_m[7:length(results_m)][c(1:apc_num+2*(apc_num+1),6*apc_num+11)]))
+				results_m[["STAAR-B(1,1)"]] <- CCT(as.numeric(results_m[7:length(results_m)][c(1:apc_num+3*(apc_num+1),6*apc_num+12)]))
+				results_m[["STAAR-A(1,25)"]] <- CCT(as.numeric(results_m[7:length(results_m)][c(1:apc_num+4*(apc_num+1),6*apc_num+13)]))
+				results_m[["STAAR-A(1,1)"]] <- CCT(as.numeric(results_m[7:length(results_m)][c(1:apc_num+5*(apc_num+1),6*apc_num+14)]))
 
-				results_ds <- c()
-				results_ds <- rbind(results_ds,results[2,])
+				results_ds <- list()
+				results_ds <- c(results_ds,results[[2]])
 
-				results <- c()
-				results <- rbind(results,results_m)
+				results <- list()
+				results <- c(results,results_m)
 			}
 		}
 	}else
 	{
-		results <- c()
-		results_ds <- c()
+		results <- list()
+		results_ds <- list()
 	}
 
 	results_coding <- list(plof=results_plof,plof_ds=results_plof_ds,missense=results,disruptive_missense=results_ds,synonymous=results_synonymous)
