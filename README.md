@@ -3,6 +3,153 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/ltr225p13idh2934/branch/main?svg=true)](https://ci.appveyor.com/project/xihaoli/staarpipeline/branch/main)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+# For MR
+
+**Step 0**: install the STAARpipeline package with modified code in R so that the output also includes IDs
+
+**Note**: 
+
+1. I only change the code for gene_centric_coding and Individual_analysis
+2. the format of the output is different from the original one.
+
+···
+devtools::install_github("yu-zhang-oYo/STAARpipeline", ref = "STAARpipeline_MR")
+···
+
+
+**Step 1**: Fit STAAR null model
+···
+cd GA
+Rscript STAARpipeline_Null_Model.r
+···
+
+**Step 2**: Individual (single variant) analysis
+···
+mkdir single_output
+Rscript STAARpipeline_Individual_Analysis.r 22
+···
+
+**Step 3.1**: Gene-centric coding analysis
+···
+mkdir gene_centric_output
+Rscript STAARpipeline_Gene_Centric_Coding.r 22
+···
+
+**Step 4**: simple LASSO for all the variables in R
+
+```
+library(SeqArray)
+library(dplyr)
+library(glmnet)
+library(AER)
+
+setwd("/Users/yzh10/Library/CloudStorage/OneDrive-IndianaUniversity/research/nuMoM2b/whole_sequencing/GA")
+
+## aGDS directory
+agds_dir <- get(load("../agds_dir.Rdata"))
+agds_dir <- paste0(".", agds_dir)
+## Null model
+obj_nullmodel <- get(load("./outputobj_nullmodel.Rdata"))
+
+agds.path <- agds_dir[1]
+genofile <- seqOpen(agds.path)
+
+phenotype.id <- as.character(obj_nullmodel$id_include)
+
+# load individual_analysis results
+single <- read.table(file="single_output/individual_analysis_22.out", header=TRUE, stringsAsFactors=F)
+single_sig <- single[single$pvalue < 1e-8,]
+variantIDs_select_single <- single_sig$variantIDs
+
+
+# load gene_centric_coding results
+load("gene_centric_output/gene_centric_coding_22.Rdata")
+
+
+# choose significant results for gene_centric_coding results
+# Note: choose suitable alpha, so that we can have suitable numbers of variants for LASSO
+#.      if too much or too less variants, the prediction is only one values
+staar_o_values_sig <- lapply(results_coding, function(x, alpha=1e-4) {
+  if ((length(x)>0) && x$'STAAR-O' < alpha) {
+    return(x)
+  }
+})
+# Remove NULL values
+staar_o_values_sig <- Filter(Negate(is.null), staar_o_values_sig)
+variantIDs_select_gene <- unique(unlist(sapply(staar_o_values_sig, function(x) x$variantIDs)))
+
+variantIDs_select_total <- c(variantIDs_select_single, variantIDs_select_gene)
+# there may be duplicated IDs in single and gene
+variantIDs_select_total <- unique(variantIDs_select_total)
+
+# Function to extract SNP values for a given set of IDs
+extract_SNP_values <- function(IDs, genofile, phenotype.id, variant=TRUE) {
+  # Extract all available IDs from the genofile
+  # different varinat.id may have the same annotation/id
+  if(variant){
+    seqSetFilter(genofile, variant.id = IDs, sample.id = phenotype.id)
+  } else{
+    seqSetFilter(genofile, sample.id = phenotype.id)
+    seqSetFilterAnnotID(genofile, id = IDs)
+  }
+  SNP_values <- seqGetData(genofile, "$dosage_alt")  
+  SNP_values <- as.matrix(SNP_values)
+  # Retrieve the sample IDs
+  sample_ids <- seqGetData(genofile, "sample.id")
+  variant_ids <- seqGetData(genofile, "variant.id")
+  df <- cbind(sample_ids, SNP_values)
+  colnames(df) <- c("sample.id", variant_ids)
+  df <- as.data.frame(df)
+  
+  # Reset the filter
+  seqResetFilter(genofile)
+
+  return(df)
+}
+
+df_total <- extract_SNP_values(IDs=variantIDs_select_total, genofile=genofile, phenotype.id=phenotype.id, variant=TRUE)
+seqClose(genofile)
+
+phenotype <- read.csv("./pheno/pheno.csv")
+df <- merge(df_total, phenotype, by="sample.id")
+var_expo <- "GA"
+df <- df[,c(variantIDs_select_total, var_expo)]
+df <- na.omit(df)
+X_select <- df %>%
+  mutate(across(all_of(as.character(variantIDs_select_total)), as.numeric)) %>%
+  select(all_of(as.character(variantIDs_select_total))) %>%
+  as.matrix()
+y_select <- df[ , var_expo]
+
+# simple LASSO for all the variables
+cv_model <- cv.glmnet(X_select, y_select, alpha = 1)
+best_lambda <- cv_model$lambda.min
+best_model <- glmnet(X_select, y_select, alpha = 1, lambda = best_lambda)
+coefficients <- coef(best_model)
+df$predicted_expo <- predict(best_model, s = best_lambda, newx = X_select)
+hist(df$predicted_expo)
+
+# use the prediction for the second stage directly
+var_outc <- "GA_fake"
+df[[var_outc]] <- df[[var_expo]]
+formula_str <- paste(var_outc, " ~ ", "predicted_expo")
+second_stage_model <- lm(formula_str, data = df)
+# Display the summary of the second stage model
+summary(second_stage_model)
+
+
+# use the prediction of the exposure as IV
+var_outc <- "GA_fake"
+df[[var_outc]] <- df[[var_expo]]
+formula_str <- paste(var_outc, " ~ ", var_expo, "|", "predicted_expo")
+model_ivreg <- ivreg(as.formula(formula_str), data = df)
+summary(model_ivreg, diagnostics = TRUE)
+
+```
+
+
+
+
 # STAARpipeline
 This is an R package for performing association analysis of whole-genome/whole-exome sequencing (WGS/WES) studies using STAAR pipeline.
 ## Description
