@@ -196,6 +196,12 @@ Individual_Analysis <- function(chr,start_loc,end_loc,genofile,obj_nullmodel,mac
 			MAF_rare <- MAF[(MAF>(mac_cutoff-0.5)/samplesize/2)&(MAF<0.05)]
 			ALT_AF_rare <- ALT_AF[(MAF>(mac_cutoff-0.5)/samplesize/2)&(MAF<0.05)]
 			N_rare <- N[(MAF>(mac_cutoff-0.5)/samplesize/2)&(MAF<0.05)]
+			
+			# get the id number
+			variantIDs_rare <- variantIDs[(MAF > (mac_cutoff - 0.5)/samplesize/2) & 
+			                                (MAF < 0.05)]
+			rsIDs_rare <- rsIDs[(MAF > (mac_cutoff - 0.5)/samplesize/2) & 
+			                      (MAF < 0.05)]
 
 			## sparse GRM
 			if(obj_nullmodel$sparse_kins)
@@ -225,7 +231,7 @@ Individual_Analysis <- function(chr,start_loc,end_loc,genofile,obj_nullmodel,mac
 				}
 			}
 
-			results_temp <- data.frame(CHR=CHR_rare, variantIDs=variantIDs_common, rsIDs=rsIDs_common,
+			results_temp <- data.frame(CHR=CHR_rare, variantIDs=variantIDs_rare, rsIDs=rsIDs_rare,
 			                           POS=position_rare,REF=REF_rare,ALT=ALT_rare,ALT_AF=ALT_AF_rare,MAF=MAF_rare,N=N_rare,
 			                           pvalue=exp(-Score_test$pvalue_log),pvalue_log10=Score_test$pvalue_log/log(10),
 			                           Score=Score_test$Score,Score_se=Score_test$Score_se,
