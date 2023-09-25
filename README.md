@@ -12,28 +12,28 @@
 1. I only change the code for gene_centric_coding and Individual_analysis
 2. the format of the output is different from the original one.
 
-···
+```
 devtools::install_github("yu-zhang-oYo/STAARpipeline", ref = "STAARpipeline_MR")
-···
+```
 
 
 **Step 1**: Fit STAAR null model
-···
+```
 cd GA
 Rscript STAARpipeline_Null_Model.r
-···
+```
 
 **Step 2**: Individual (single variant) analysis
-···
+```
 mkdir single_output
 Rscript STAARpipeline_Individual_Analysis.r 22
-···
+```
 
 **Step 3.1**: Gene-centric coding analysis
-···
+```
 mkdir gene_centric_output
 Rscript STAARpipeline_Gene_Centric_Coding.r 22
-···
+```
 
 **Step 4**: simple LASSO for all the variables in R
 
