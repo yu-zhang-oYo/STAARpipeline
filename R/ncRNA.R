@@ -122,6 +122,9 @@ ncRNA <- function(chr,gene_name,genofile,obj_nullmodel,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id") 
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -176,32 +179,32 @@ ncRNA <- function(chr,gene_name,genofile,obj_nullmodel,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results <- c()
+	results <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- rep(NA,4)
-		results_temp[3] <- "ncRNA"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(gene_name)
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(gene_name)
+		results_temp$Chr <- chr
+		results_temp$Category <- "ncRNA"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- 	variant.is.in[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results <- rbind(results,results_temp)
-	}
-
-	if(!is.null(results))
-	{
-		colnames(results) <- colnames(results, do.NULL = FALSE, prefix = "col")
-		colnames(results)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results)[(dim(results)[2]-1):dim(results)[2]] <- c("ACAT-O","STAAR-O")
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results <- c(results, results_temp)
 	}
 
 	seqResetFilter(genofile)
 
-	return(results)
+	return(list(results))
 }
 

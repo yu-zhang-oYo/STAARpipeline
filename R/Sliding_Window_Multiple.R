@@ -51,11 +51,15 @@ Sliding_Window_Multiple <- function(chr,start_loc,end_loc,sliding_window_length=
 	phenotype.id.merge <- dplyr::left_join(phenotype.id.merge,id.genotype.merge,by=c("phenotype.id"="id.genotype"))
 	id.genotype.match <- phenotype.id.merge$index
 
-	if(sum(is.in)>=2)
+	if(sum(is.in)>=2)  # should here be rv_num_cutoff instead of 2 in the original code?
 	{
 		## Genotype
 		Geno <- seqGetData(genofile, "$dosage")
 		Geno <- Geno[id.genotype.match,,drop=FALSE]
+		
+		# get the IDs 
+		rsIDs <- seqGetData(genofile, "annotation/id")  
+		variantIDs <- seqGetData(genofile, "variant.id") 
 
 		## impute missing
 		if(!is.null(dim(Geno)))
@@ -111,7 +115,7 @@ Sliding_Window_Multiple <- function(chr,start_loc,end_loc,sliding_window_length=
 		## Position
 		position_sub <- position_SNV[(position_SNV>=start_loc)&(position_SNV<=end_loc)]
 
-		results <- c()
+		results <- list()
 		for(k in 1:sliding_window_num)
 		{
 			region_start_loc <- start_loc + (k-1)*(sliding_window_length/2)
@@ -119,8 +123,13 @@ Sliding_Window_Multiple <- function(chr,start_loc,end_loc,sliding_window_length=
 
 			region.id <- (position_sub>=region_start_loc)&(position_sub<=region_end_loc)
 			G <- Geno[,region.id]
+			
+			# IDs for each sliding_window
+			rsIDs_k <- rsIDs[region.id]
+			variantIDs_k <- variantIDs[region.id]
 
-			results_temp <- c(chr,region_start_loc,region_end_loc)
+			# change the original code to output list
+			results_temp <- list(Chr=chr, Start_Loc=region_start_loc, End_Loc=region_end_loc)
 
 			## weights
 			phred_sub <- Anno.Int.PHRED.sub[region.id,]
@@ -131,24 +140,23 @@ Sliding_Window_Multiple <- function(chr,start_loc,end_loc,sliding_window_length=
 
 			if(class(pvalues)=="list")
 			{
-				results_temp <- c(results_temp,pvalues$num_variant,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
+				results_temp$'#SNV' <- pvalues$num_variant
+				results_temp$rsIDs <- rsIDs_k[pvalues$RV_label]
+				results_temp$variantIDs <- variantIDs_k[pvalues$RV_label]
+				
+				results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
 				                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-				                  pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-				results <- rbind(results,results_temp)
+				                  pvalues$results_STAAR_A_1_1)
+				
+				results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+				results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+				results <- c(results, list(results_temp))
 			}
 		}
 	}else
 	{
 		seqResetFilter(genofile)
 		stop(paste0("Number of rare variant in the set is less than 2!"))
-	}
-
-	if(!is.null(results))
-	{
-		colnames(results) <- colnames(results, do.NULL = FALSE, prefix = "col")
-		colnames(results)[1:4] <- c("Chr","Start Loc","End Loc","#SNV")
-		colnames(results)[(dim(results)[2]-1):dim(results)[2]] <- c("ACAT-O","STAAR-O")
 	}
 
 	seqResetFilter(genofile)
