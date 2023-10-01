@@ -85,6 +85,9 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id")  
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -139,28 +142,28 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results_downstream <- c()
+	results_downstream <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- rep(NA,4)
-		results_temp[3] <- "downstream"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(gene_name)
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(gene_name)
+		results_temp$Chr <- chr
+		results_temp$Category <- "downstream"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- 	variant.is.in[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results_downstream <- rbind(results_downstream,results_temp)
-	}
-
-	if(!is.null(results_downstream))
-	{
-		colnames(results_downstream) <- colnames(results_downstream, do.NULL = FALSE, prefix = "col")
-		colnames(results_downstream)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results_downstream)[(dim(results_downstream)[2]-1):dim(results_downstream)[2]] <- c("ACAT-O","STAAR-O")
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results_downstream <- c(results_downstream, results_temp)
 	}
 
 	seqResetFilter(genofile)
@@ -215,6 +218,9 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id")  
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -269,28 +275,28 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results_upstream <- c()
+	results_upstream <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- rep(NA,4)
-		results_temp[3] <- "upstream"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(gene_name)
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(gene_name)
+		results_temp$Chr <- chr
+		results_temp$Category <- "upstream"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- 	variant.is.in[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results_upstream <- rbind(results_upstream,results_temp)
-	}
-
-	if(!is.null(results_upstream))
-	{
-		colnames(results_upstream) <- colnames(results_upstream, do.NULL = FALSE, prefix = "col")
-		colnames(results_upstream)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results_upstream)[(dim(results_upstream)[2]-1):dim(results_upstream)[2]] <- c("ACAT-O","STAAR-O")
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results_upstream <- c(results_upstream, results_temp)
 	}
 
 	seqResetFilter(genofile)
@@ -343,6 +349,9 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id")
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -397,28 +406,28 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results_UTR <- c()
+	results_UTR <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- rep(NA,4)
-		results_temp[3] <- "UTR"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(gene_name)
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(gene_name)
+		results_temp$Chr <- chr
+		results_temp$Category <- "UTR"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- 	variant.is.in[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results_UTR <- rbind(results_UTR,results_temp)
-	}
-
-	if(!is.null(results_UTR))
-	{
-		colnames(results_UTR) <- colnames(results_UTR, do.NULL = FALSE, prefix = "col")
-		colnames(results_UTR)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results_UTR)[(dim(results_UTR)[2]-1):dim(results_UTR)[2]] <- c("ACAT-O","STAAR-O")
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results_UTR <- c(results_UTR, results_temp)
 	}
 
 	seqResetFilter(genofile)
@@ -495,6 +504,9 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id")
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -549,28 +561,28 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results_promoter_CAGE <- c()
+	results_promoter_CAGE <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- dfPromCAGEVarGene.SNV[1,1:4]
-		results_temp[3] <- "promoter_CAGE"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(gene_name)
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(gene_name)
+		results_temp$Chr <- chr
+		results_temp$Category <- "promoter_CAGE"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- 	variant.is.in[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results_promoter_CAGE <- rbind(results_promoter_CAGE,results_temp)
-	}
-
-	if(!is.null(results_promoter_CAGE))
-	{
-		colnames(results_promoter_CAGE) <- colnames(results_promoter_CAGE, do.NULL = FALSE, prefix = "col")
-		colnames(results_promoter_CAGE)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results_promoter_CAGE)[(dim(results_promoter_CAGE)[2]-1):dim(results_promoter_CAGE)[2]] <- c("ACAT-O","STAAR-O")
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results_promoter_CAGE <- c(results_promoter_CAGE, results_temp)
 	}
 
 	seqResetFilter(genofile)
@@ -643,6 +655,9 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id")
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -697,28 +712,28 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results_promoter_DHS <- c()
+	results_promoter_DHS <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- dfPromrOCRsVarGene.SNV[1,1:4]
-		results_temp[3] <- "promoter_DHS"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(gene_name)
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(gene_name)
+		results_temp$Chr <- chr
+		results_temp$Category <- "promoter_DHS"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- 	variant.is.in[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results_promoter_DHS <- rbind(results_promoter_DHS ,results_temp)
-	}
-
-	if(!is.null(results_promoter_DHS))
-	{
-		colnames(results_promoter_DHS) <- colnames(results_promoter_DHS, do.NULL = FALSE, prefix = "col")
-		colnames(results_promoter_DHS)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results_promoter_DHS)[(dim(results_promoter_DHS)[2]-1):dim(results_promoter_DHS)[2]] <- c("ACAT-O","STAAR-O")
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results_promoter_DHS <- c(results_promoter_DHS, results_temp)
 	}
 
 	seqResetFilter(genofile)
@@ -795,6 +810,9 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id")
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -849,28 +867,28 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results_enhancer_CAGE <- c()
+	results_enhancer_CAGE <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- dfHancerVarGene.SNV[1,1:4]
-		results_temp[3] <- "enhancer_CAGE"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(gene_name)
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(gene_name)
+		results_temp$Chr <- chr
+		results_temp$Category <- "enhancer_CAGE"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- 	variant.is.in[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results_enhancer_CAGE <- rbind(results_enhancer_CAGE,results_temp)
-	}
-
-	if(!is.null(results_enhancer_CAGE))
-	{
-		colnames(results_enhancer_CAGE) <- colnames(results_enhancer_CAGE, do.NULL = FALSE, prefix = "col")
-		colnames(results_enhancer_CAGE)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results_enhancer_CAGE)[(dim(results_enhancer_CAGE)[2]-1):dim(results_enhancer_CAGE)[2]] <- c("ACAT-O","STAAR-O")
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results_enhancer_CAGE <- c(results_enhancer_CAGE, results_temp)
 	}
 
 	seqResetFilter(genofile)
@@ -946,6 +964,9 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	Geno <- seqGetData(genofile, "$dosage")
 	Geno <- Geno[id.genotype.match,,drop=FALSE]
 
+	# get the rsID 
+	rsIDs <- seqGetData(genofile, "annotation/id")
+	
 	## impute missing
 	if(!is.null(dim(Geno)))
 	{
@@ -1000,28 +1021,28 @@ noncoding <- function(chr,gene_name,genofile,obj_nullmodel,
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 
-	results_enhancer_DHS <- c()
+	results_enhancer_DHS <- list()
 	if(class(pvalues)=="list")
 	{
-		results_temp <- dfHancerVarGene.SNV[1,1:4]
-		results_temp[3] <- "enhancer_DHS"
-		results_temp[2] <- chr
-		results_temp[1] <- as.character(gene_name)
-		results_temp[4] <- pvalues$num_variant
-
-
+		# change the original code to output list
+		results_temp <- list()
+		results_temp$Gene_name <- as.character(gene_name)
+		results_temp$Chr <- chr
+		results_temp$Category <- "enhancer_DHS"
+		results_temp$'#SNV' <- pvalues$num_variant
+		
+		# add the two kinds of IDs to the results
+		results_temp$rsIDs <- rsIDs[pvalues$RV_label]
+		results_temp$variantIDs <- 	variant.is.in[pvalues$RV_label]
+		
 		results_temp <- c(results_temp,pvalues$results_STAAR_S_1_25,pvalues$results_STAAR_S_1_1,
-		pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
-		pvalues$results_STAAR_A_1_1,pvalues$results_ACAT_O,pvalues$results_STAAR_O)
-
-		results_enhancer_DHS <- rbind(results_enhancer_DHS,results_temp)
-	}
-
-	if(!is.null(results_enhancer_DHS))
-	{
-		colnames(results_enhancer_DHS) <- colnames(results_enhancer_DHS, do.NULL = FALSE, prefix = "col")
-		colnames(results_enhancer_DHS)[1:4] <- c("Gene name","Chr","Category","#SNV")
-		colnames(results_enhancer_DHS)[(dim(results_enhancer_DHS)[2]-1):dim(results_enhancer_DHS)[2]] <- c("ACAT-O","STAAR-O")
+		                  pvalues$results_STAAR_B_1_25,pvalues$results_STAAR_B_1_1,pvalues$results_STAAR_A_1_25,
+		                  pvalues$results_STAAR_A_1_1)
+		
+		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
+		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		
+		results_enhancer_DHS <- c(results_enhancer_DHS, results_temp)
 	}
 
 	seqResetFilter(genofile)
