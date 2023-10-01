@@ -11,6 +11,7 @@
 
 1. I only change the code for gene_centric_coding and Individual_analysis
 2. the format of the output is different from the original one.
+3. for Sliding window analysis, only modify the Sliding_Window_Multiple.R, not Sliding_Window_Single.R
 
 ```
 devtools::install_github("yu-zhang-oYo/STAARpipeline", ref = "STAARpipeline_MR")
@@ -35,7 +36,19 @@ mkdir gene_centric_output
 Rscript STAARpipeline_Gene_Centric_Coding.r 22
 ```
 
-**Step 4**: simple LASSO for all the variables in R
+**step 3.2**: Gene-centric noncoding analysis
+Rscript STAARpipeline_Gene_Centric_Noncoding.r 22
+
+**step 3.3**: Gene-centric ncRNA analysis
+Rscript STAARpipeline_Gene_Centric_ncRNA.r 22
+
+**step 4.1**: Sliding window analysis (fixed length)
+mkdir sliding_window_output
+Rscript STAARpipeline_Sliding_Window2.r 22 1 1 #chr=22; split in to 1 part (long chr can be split into many parts, chr22 is a whole part); part 1 is run
+
+**Note**: use append() in the STAARpipeline_Gene_Centric_ncRNA.R, STAARpipeline_Sliding_Window2.R not rbind() as the resutls is a list, and results_ncRNA contains elements with list(), after removing those list(), it has the same length as the results of original code. 
+
+**Step 5**: simple LASSO for all the variables in R
 
 ```
 library(SeqArray)
@@ -65,6 +78,14 @@ variantIDs_select_single <- single_sig$variantIDs
 # load gene_centric_coding results
 load("gene_centric_output/gene_centric_coding_22.Rdata")
 
+# load gene_centric_noncoding results
+load("gene_centric_output/gene_centric_noncoding_22.Rdata")
+
+# load gene_centric_ncRNA results
+load("gene_centric_output/gene_centric_ncRNA_22.Rdata")
+
+# load sliding_window results
+load("sliding_window_output/sliding_window_22_1.Rdata")
 
 # choose significant results for gene_centric_coding results
 # Note: choose suitable alpha, so that we can have suitable numbers of variants for LASSO
@@ -78,6 +99,7 @@ staar_o_values_sig <- lapply(results_coding, function(x, alpha=1e-4) {
 staar_o_values_sig <- Filter(Negate(is.null), staar_o_values_sig)
 variantIDs_select_gene <- unique(unlist(sapply(staar_o_values_sig, function(x) x$variantIDs)))
 
+# using SNPs selected from individual analysis and gene_centric_coding analysis for lasso
 variantIDs_select_total <- c(variantIDs_select_single, variantIDs_select_gene)
 # there may be duplicated IDs in single and gene
 variantIDs_select_total <- unique(variantIDs_select_total)
