@@ -151,7 +151,9 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
-
+	# calculate the Burden effect size with Burden_EffectSize
+	try(burden_effectsize <- Burden_EffectSize(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
+	
 	results_plof_ds <- list()
 	if(class(pvalues)=="list")
 	{
@@ -172,6 +174,8 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 		
 		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
 		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		# add Burden effect size to the results
+		results_temp$Burden_Effect_Size <- burden_effectsize$Burden_Effect_Size
 
 		results_plof_ds <- c(results_plof_ds, results_temp)
 	}
@@ -223,7 +227,9 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
-
+	# calculate the Burden effect size with Burden_EffectSize
+	try(burden_effectsize <- Burden_EffectSize(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
+	
 	results_plof <- list()
 	if(class(pvalues)=="list")
 	{
@@ -244,6 +250,8 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 		
 		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
 		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		# add Burden effect size to the results
+		results_temp$Burden_Effect_Size <- burden_effectsize$Burden_Effect_Size
 		
 		results_plof <- c(results_plof,results_temp)
 	}
@@ -293,7 +301,9 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
-
+	# calculate the Burden effect size with Burden_EffectSize
+	try(burden_effectsize <- Burden_EffectSize(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
+	
 	results_synonymous <- list()
 	if(class(pvalues)=="list")
 	{
@@ -314,6 +324,8 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 		
 		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
 		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		# add Burden effect size to the results
+		results_temp$Burden_Effect_Size <- burden_effectsize$Burden_Effect_Size
 		
 		results_synonymous <- c(results_synonymous,results_temp)
 	}
@@ -364,7 +376,9 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
-
+	# calculate the Burden effect size with Burden_EffectSize
+	try(burden_effectsize <- Burden_EffectSize(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
+	
 	results <- list()
 	if(class(pvalues)=="list")
 	{
@@ -385,6 +399,8 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 		
 		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
 		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		# add Burden effect size to the results
+		results_temp$Burden_Effect_Size <- burden_effectsize$Burden_Effect_Size
 		
 		results <- c(results,list(results_temp))
 	}
@@ -434,7 +450,9 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 
 	pvalues <- 0
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
-
+	# calculate the Burden effect size with Burden_EffectSize
+	try(burden_effectsize <- Burden_EffectSize(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
+	
 	if(class(pvalues)=="list")
 	{
 		# change the original code to output list
@@ -454,6 +472,8 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 		
 		results_temp$'ACAT-O' <- pvalues$results_ACAT_O
 		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
+		# add Burden effect size to the results
+		results_temp$Burden_Effect_Size<- burden_effectsize$Burden_Effect_Size
 		
 		results <- c(results,list(results_temp))		
 		
