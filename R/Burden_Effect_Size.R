@@ -138,6 +138,15 @@ Burden_EffectSize <- function(genotype, obj_nullmodel, annotation_phred = NULL, 
     } else {
       w_B <- as.matrix(cbind(w_1, annotation_rank * w_1, w_2, annotation_rank * w_2))
     }
+    
+    # weight the rare variants on a gene set into a variable by annotation score for each individual
+    # how to consider the relatedness of individuals when calculating the correlation of gene-sets
+    Geno_rare_weighted <- G %*% w_B  
+    colnames(Geno_rare_weighted) <- c("Burden(1,25)",
+                                      paste0("Burden(1,25)-",colnames(annotation_phred)),
+                                      "Burden(1,1)",
+                                      paste0("Burden(1,1)-",colnames(annotation_phred))
+                                      )
 
     if(obj_nullmodel$relatedness){
       if(!obj_nullmodel$sparse_kins){
@@ -187,7 +196,8 @@ Burden_EffectSize <- function(genotype, obj_nullmodel, annotation_phred = NULL, 
       num_variant = sum(RV_label),
       cMAC = sum(G),
       RV_label = RV_label,
-      Burden_Effect_Size = Burden_Effect_Size
+      Burden_Effect_Size = Burden_Effect_Size,
+      Geno_Rare_Weighted = Geno_rare_weighted
     ))
   } else {
     stop(paste0("Number of rare variant in the set is less than ", rv_num_cutoff, "!"))
