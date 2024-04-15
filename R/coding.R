@@ -153,7 +153,7 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 	try(pvalues <- STAAR(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
 	# calculate the Burden effect size with Burden_EffectSize
 	try(burden_effectsize <- Burden_EffectSize(Geno,obj_nullmodel,Anno.Int.PHRED.sub.category,rare_maf_cutoff=rare_maf_cutoff,rv_num_cutoff=rv_num_cutoff),silent=silent)
-	
+
 	results_plof_ds <- list()
 	if(class(pvalues)=="list")
 	{
@@ -176,6 +176,7 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
 		# add Burden effect size to the results
 		results_temp$Burden_Effect_Size <- burden_effectsize$Burden_Effect_Size
+		results_temp$Geno_Rare_Weighted <- burden_effectsize$Geno_Rare_Weighted
 
 		results_plof_ds <- c(results_plof_ds, results_temp)
 	}
@@ -252,6 +253,7 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
 		# add Burden effect size to the results
 		results_temp$Burden_Effect_Size <- burden_effectsize$Burden_Effect_Size
+		results_temp$Geno_Rare_Weighted <- burden_effectsize$Geno_Rare_Weighted
 		
 		results_plof <- c(results_plof,results_temp)
 	}
@@ -326,6 +328,7 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
 		# add Burden effect size to the results
 		results_temp$Burden_Effect_Size <- burden_effectsize$Burden_Effect_Size
+		results_temp$Geno_Rare_Weighted <- burden_effectsize$Geno_Rare_Weighted
 		
 		results_synonymous <- c(results_synonymous,results_temp)
 	}
@@ -401,6 +404,7 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
 		# add Burden effect size to the results
 		results_temp$Burden_Effect_Size <- burden_effectsize$Burden_Effect_Size
+		results_temp$Geno_Rare_Weighted <- burden_effectsize$Geno_Rare_Weighted
 		
 		results <- c(results,list(results_temp))
 	}
@@ -474,6 +478,7 @@ coding <- function(chr,gene_name,genofile,obj_nullmodel,genes,
 		results_temp$'STAAR-O' <- pvalues$results_STAAR_O
 		# add Burden effect size to the results
 		results_temp$Burden_Effect_Size<- burden_effectsize$Burden_Effect_Size
+		results_temp$Geno_Rare_Weighted <- burden_effectsize$Geno_Rare_Weighted
 		
 		results <- c(results,list(results_temp))		
 		
